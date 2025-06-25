@@ -3,7 +3,7 @@ session_start();
 include "modelo/conexion.php";
 
 if(isset($_POST['btnlogin'])){
-    $email = $conexion->real_escape_string($_POST['usuario']); // El campo de usuario será el email
+    $email = $conexion->real_escape_string($_POST['usuario']);
     $password = $conexion->real_escape_string($_POST['password']);
     
     $sql = $conexion->query("SELECT * FROM usuario WHERE email='$email' AND password='$password'");
@@ -13,6 +13,7 @@ if(isset($_POST['btnlogin'])){
         $_SESSION['nombre'] = $datos->nombre;
         $_SESSION['email'] = $datos->email;
         $_SESSION['id_rol'] = $datos->id_rol;
+        // Redirigir al index solo si no se ha enviado salida antes
         header("Location: index.php");
         exit();
     } else {

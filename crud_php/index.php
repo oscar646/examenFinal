@@ -1,116 +1,143 @@
 <?php
 session_start();
-if(!isset($_SESSION['usuario'])){
+if(!isset($_SESSION['id_usuario'])){
     header("Location: login.php");
     exit();
 }
+include "modelo/conexion.php";
 ?>
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crud de Clientes</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://kit.fontawesome.com/60229f6865.js" crossorigin="anonymous"></script>
-</head>
-
-<body>
-    <?php
-    if(isset($_SESSION['mensaje'])) {
-        echo $_SESSION['mensaje'];
-        unset($_SESSION['mensaje']);
-    }
-    ?>
-    <script>
-        function eliminar(){
-            var respuesta=confirm("¿Estás seguro de eliminar este registro?");
-            return respuesta;
+    <title>Panel de Gestión Universitaria</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #b2f7c1 0%, #e0ffe6 100%);
+            min-height: 100vh;
         }
-    </script>
-
-    <h1 class="text-center p-3">Gestión de Clientes</h1>
-    <div class="text-end p-3">
+        .container {
+            margin-top: 40px;
+        }
+        .table thead {
+            background: #a3e635;
+            color: #fff;
+        }
+        .btn-custom {
+            background: #34d399;
+            color: #fff;
+            border: none;
+        }
+        .btn-custom:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Panel de Gestión Universitaria</h2>
         <a href="cerrar_sesion.php" class="btn btn-danger">Cerrar Sesión</a>
     </div>
-    <?php
-    include "modelo/conexion.php";
-    include "controlador/eliminar_cliente.php";
-    ?>
-    <div class="container-fluid row">
-        <form class="col-4 p-3 " method="POST">
-            <h3 class="text-center text-secondary">Registro de Clientes</h3>
+    <ul class="nav nav-tabs mb-4" id="crudTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="usuarios-tab" data-bs-toggle="tab" data-bs-target="#usuarios" type="button" role="tab">Usuarios</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="estudiantes-tab" data-bs-toggle="tab" data-bs-target="#estudiantes" type="button" role="tab">Estudiantes</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="docentes-tab" data-bs-toggle="tab" data-bs-target="#docentes" type="button" role="tab">Docentes</button>
+      </li>
+    </ul>
+    <div class="tab-content" id="crudTabsContent">
+      <!-- Usuarios -->
+      <div class="tab-pane fade show active" id="usuarios" role="tabpanel">
+        <h4>Usuarios</h4>
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Rol</th>
+            </tr>
+          </thead>
+          <tbody>
             <?php
-            include "controlador/registro_cliente.php"
+            $sql = $conexion->query("SELECT u.id_usuario, u.nombre, u.email, r.nombre_rol FROM usuario u JOIN rol r ON u.id_rol = r.id_rol");
+            while($row = $sql->fetch_object()){
+              echo "<tr>
+                <td>{$row->id_usuario}</td>
+                <td>{$row->nombre}</td>
+                <td>{$row->email}</td>
+                <td>{$row->nombre_rol}</td>
+              </tr>";
+            }
             ?>
-            <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre del Cliente</label>
-                <input type="text" class="form-control" name="nombre" required>
-            </div>
-            <div class="mb-3">
-                <label for="apellido" class="form-label">Apellido del Cliente</label>
-                <input type="text" class="form-control" name="apellido" required>
-            </div>
-            <div class="mb-3">
-                <label for="direccion" class="form-label">Dirección</label>
-                <input type="text" class="form-control" name="direccion" required>
-            </div>
-            <div class="mb-3">
-                <label for="fecha" class="form-label">Fecha de Nacimiento</label>
-                <input type="date" class="form-control" name="fecha" required>
-            </div>
-            <div class="mb-3">
-                <label for="telefono" class="form-label">Teléfono</label>
-                <input type="number" class="form-control" name="telefono" required>
-            </div>
-            <div class="mb-3">
-                <label for="correo" class="form-label">Correo Electrónico</label>
-                <input type="email" class="form-control" name="correo" required>
-            </div>
-
-            <button type="submit" class="btn btn-primary" name="btnregistrar">Registrar Cliente</button>
-        </form>
-        <div class="col-8 p-4">
-            <table class="table">
-                <thead>
-                    <tr class="table-info">
-                        <th scope="col">ID</th>
-                        <th scope="col">NOMBRE</th>
-                        <th scope="col">APELLIDO</th>
-                        <th scope="col">DIRECCIÓN</th>
-                        <th scope="col">FECHA DE NACIMIENTO</th>
-                        <th scope="col">TELÉFONO</th>
-                        <th scope="col">CORREO</th>
-                        <th scope="col">ACCIONES</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    include "modelo/conexion.php";
-                    $sql = $conexion->query("SELECT * FROM cliente");
-                    while ($datos = $sql->fetch_object()) { ?>
-                        <tr>
-                            <td><?= $datos->id_cliente ?></td>
-                            <td><?= $datos->nombre ?></td>
-                            <td><?= $datos->apellido ?></td>
-                            <td><?= $datos->direccion ?></td>
-                            <td><?= $datos->fecha_nacimiento ?></td>
-                            <td><?= $datos->telefono ?></td>
-                            <td><?= $datos->correo ?></td>
-                            <td>
-                                <a href="editar.php?id=<?= $datos->id_cliente ?>" class="btn btn-small btn-warning"><i class="fa-solid fa-pen-to-square"></i></a>
-                                <a onclick="return eliminar()" href="index.php?id=<?= $datos->id_cliente ?>" class="btn btn-small btn-danger"><i class="fa-solid fa-trash"></i></a>
-                            </td>
-                        </tr>
-                    <?php }
-                    ?>
-                </tbody>
-            </table>
-        </div>
+          </tbody>
+        </table>
+      </div>
+      <!-- Estudiantes -->
+      <div class="tab-pane fade" id="estudiantes" role="tabpanel">
+        <h4>Estudiantes</h4>
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>CI</th>
+              <th>Fecha Nacimiento</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php
+            $sql = $conexion->query("SELECT e.id_estudiante, u.nombre, u.email, e.ci, e.fecha_nacimiento FROM estudiante e JOIN usuario u ON e.id_usuario = u.id_usuario");
+            while($row = $sql->fetch_object()){
+              echo "<tr>
+                <td>{$row->id_estudiante}</td>
+                <td>{$row->nombre}</td>
+                <td>{$row->email}</td>
+                <td>{$row->ci}</td>
+                <td>{$row->fecha_nacimiento}</td>
+              </tr>";
+            }
+            ?>
+          </tbody>
+        </table>
+      </div>
+      <!-- Docentes -->
+      <div class="tab-pane fade" id="docentes" role="tabpanel">
+        <h4>Docentes</h4>
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Profesión</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php
+            $sql = $conexion->query("SELECT d.id_docente, u.nombre, u.email, d.profesion FROM docente d JOIN usuario u ON d.id_usuario = u.id_usuario");
+            while($row = $sql->fetch_object()){
+              echo "<tr>
+                <td>{$row->id_docente}</td>
+                <td>{$row->nombre}</td>
+                <td>{$row->email}</td>
+                <td>{$row->profesion}</td>
+              </tr>";
+            }
+            ?>
+          </tbody>
+        </table>
+      </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
-</html>
+</html> 
